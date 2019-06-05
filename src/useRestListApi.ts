@@ -313,8 +313,7 @@ function useRestListApi<T, RawResponse = ListResponse<T>>(
    * @returns
    */
   function query(searchParams: { [x: string]: string }) {
-    return doFetch({
-      ...state.searchParams,
+    return doFetch(state.sorts, {
       ...searchParams,
     });
   }
@@ -325,7 +324,7 @@ function useRestListApi<T, RawResponse = ListResponse<T>>(
    * @returns
    */
   function reload() {
-    return doFetch(state.searchParams);
+    return doFetch(state.sorts, state.searchParams);
   }
 
   /**
