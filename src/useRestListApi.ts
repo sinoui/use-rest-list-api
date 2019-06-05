@@ -1,9 +1,22 @@
-import { useReducer, useCallback, useRef } from 'react';
+import { useReducer, useCallback, useRef, useEffect } from 'react';
 import http from '@sinoui/http';
+import qs from 'qs';
 import { Options, SortInfo, ListResponse } from './types';
 import reducer from './reducer';
 import getSearchParams from './getSearchParams';
 import useEffect2 from './useEffect2';
+
+/**
+ * 从history中获取查询参数
+ */
+function getSearchParamsFromLocation() {
+  const { search } = window.location;
+
+  if (search && search.length > 1) {
+    return qs.parse(window.location.search.substr(1));
+  }
+  return null;
+}
 
 function useRestListApi<T, RawResponse = ListResponse<T>>(
   url: string,
@@ -14,6 +27,7 @@ function useRestListApi<T, RawResponse = ListResponse<T>>(
   const keyName = options && options.keyName ? options.keyName : 'id';
 
   const {
+    syncToUrl,
     defaultSearchParams,
     baseUrl,
     transformListRequest,
@@ -32,6 +46,9 @@ function useRestListApi<T, RawResponse = ListResponse<T>>(
     isLoading: false,
     items: defaultValue,
     sorts: defaultSorts,
+    searchParams: syncToUrl
+      ? getSearchParamsFromLocation() || defaultSearchParams
+      : defaultSearchParams,
   });
 
   const doFetch = useCallback(
@@ -68,8 +85,21 @@ function useRestListApi<T, RawResponse = ListResponse<T>>(
   );
 
   useEffect2(() => {
-    doFetch(defaultSorts, defaultSearchParams);
+    const searchParams = syncToUrl
+      ? getSearchParamsFromLocation() || defaultSearchParams
+      : defaultSearchParams;
+    doFetch(defaultSorts, searchParams);
   }, [url]);
+
+  useEffect(() => {
+    if (!syncToUrl) {
+      return;
+    }
+    const search = `?${qs.stringify(state.searchParams)}`;
+    if (search !== window.location.search) {
+      window.history.pushState(window.history.state, document.title, search);
+    }
+  }, [state.searchParams, syncToUrl]);
 
   /**
    * 获取数据
@@ -82,7 +112,6 @@ function useRestListApi<T, RawResponse = ListResponse<T>>(
     searchParams?: { [x: string]: string },
   ): Promise<ListResponse<T>> {
     return doFetch(sorts || state.sorts, {
-      ...state.searchParams,
       ...searchParams,
     });
   }
