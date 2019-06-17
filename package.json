@@ -1,5 +1,5 @@
 {
-  "name": "use-rest-list-api",
+  "name": "@sinoui/use-rest-list-api",
   "version": "0.1.0",
   "license": "MIT",
   "main": "dist/index.js",
@@ -47,8 +47,8 @@
   "dependencies": {
     "@babel/polyfill": "^7.4.4",
     "@babel/runtime": "^7.4.5",
-    "@sinoui/use-data-api": "^0.2.2",
-    "@sinoui/http": "^0.2.1",
+    "@sinoui/use-data-api": "^0.4.0",
+    "@sinoui/http": "^0.2.2",
     "qs": "^6.7.0",
     "@types/qs": "^6.5.3",
     "react": "^16.8.6",
@@ -58,10 +58,13 @@
     "husky": "^2.3.0",
     "lint-staged": "^8.1.7",
     "prettier": "^1.17.1",
-    "ts-lib-tools": "^0.1.7",
+    "ts-lib-tools": "^0.2.2",
     "typescript": "^3.5.1",
     "react-hooks-testing-library": "^0.5.0",
     "react-test-renderer": "^16.8.6",
     "qs": "^6.7.0"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
