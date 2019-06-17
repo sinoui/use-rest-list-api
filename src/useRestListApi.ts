@@ -282,8 +282,9 @@ function useRestListApi<T, RawResponse = ListResponse<T>>(
     try {
       const info = transformUpdateRequest
         ? transformUpdateRequest(itemInfo)
-        : itemInfo;
-      const response: T = await http.put(requestUrl, info);
+        : itemInfo as any;
+
+      const response: T = await http.put(`${requestUrl}/${info[keyName]}`, info);
 
       const result = transformUpdateResponse
         ? transformUpdateResponse(response as any)
