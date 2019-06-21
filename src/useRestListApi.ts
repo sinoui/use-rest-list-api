@@ -24,12 +24,12 @@ function useRestListApi<T, RawResponse = ListResponse<T>>(
   options?: Options<T>,
 ) {
   const rawResponseRef = useRef<RawResponse>();
-  const keyName = options && options.keyName ? options.keyName : 'id';
 
   const {
+    keyName = 'id',
     syncToUrl,
     defaultSearchParams,
-    baseUrl,
+    baseUrl = url,
     transformListRequest,
     transformListReponse,
     transformFetchOneResponse,
@@ -38,7 +38,6 @@ function useRestListApi<T, RawResponse = ListResponse<T>>(
     transformUpdateRequest,
     transformUpdateResponse,
   } = (options || {}) as Options<T>;
-  const requestUrl = baseUrl || url;
   const defaultSorts = (options && options.defaultSort) || [];
 
   const [state, dispatch] = useReducer(reducer, {
@@ -108,10 +107,10 @@ function useRestListApi<T, RawResponse = ListResponse<T>>(
    * @returns
    */
   function fetch(
-    sorts?: SortInfo[],
-    searchParams?: { [x: string]: string },
+    sorts: SortInfo[] = state.sorts,
+    searchParams: { [x: string]: string } = state.searchParams,
   ): Promise<ListResponse<T>> {
-    return doFetch(sorts || state.sorts, {
+    return doFetch(sorts, {
       ...searchParams,
     });
   }
@@ -133,6 +132,7 @@ function useRestListApi<T, RawResponse = ListResponse<T>>(
    * @returns {T}
    */
   function getItemById(itemId: string): T {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return state.items.find((item: any) => item[keyName] === itemId);
   }
 
@@ -152,10 +152,10 @@ function useRestListApi<T, RawResponse = ListResponse<T>>(
    * 更新指定数据的部分字段
    *
    * @param {string} itemId 数据key值
-   * @param {object} itemInfo 要更新的字段信息
+   * @param {T} itemInfo 要更新的字段信息
    * @returns {T}
    */
-  function setItem(itemId: string, itemInfo: object): T {
+  function setItem(itemId: string, itemInfo: T): T {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const item = state.items.find((data: any) => data[keyName] === itemId);
     const newItem = { ...item, ...itemInfo };
@@ -171,9 +171,9 @@ function useRestListApi<T, RawResponse = ListResponse<T>>(
   /**
    * 替换数据
    *
-   * @param {object[]} itemsInfo
+   * @param {T[]} itemsInfo
    */
-  function setItems(itemsInfo: object[]) {
+  function setItems(itemsInfo: T[]) {
     dispatch({ type: 'SET_ITEMS', payload: itemsInfo });
   }
 
@@ -231,7 +231,7 @@ function useRestListApi<T, RawResponse = ListResponse<T>>(
    */
   async function get(id: string, isNeedUpdate: boolean = true): Promise<T> {
     try {
-      const response: T = await http.get(`${requestUrl}/${id}`);
+      const response: T = await http.get(`${baseUrl}/${id}`);
       const result = transformFetchOneResponse
         ? transformFetchOneResponse(response as any)
         : response;
@@ -257,7 +257,7 @@ function useRestListApi<T, RawResponse = ListResponse<T>>(
       const info = transformSaveRequest
         ? transformSaveRequest(itemInfo)
         : itemInfo;
-      const response: T = await http.post(requestUrl, info);
+      const response: T = await http.post(baseUrl, info);
       const result = transformSaveResponse
         ? transformSaveResponse(response as any)
         : response;
@@ -282,9 +282,9 @@ function useRestListApi<T, RawResponse = ListResponse<T>>(
     try {
       const info = transformUpdateRequest
         ? transformUpdateRequest(itemInfo)
-        : itemInfo as any;
+        : (itemInfo as any);
 
-      const response: T = await http.put(`${requestUrl}/${info[keyName]}`, info);
+      const response: T = await http.put(`${baseUrl}/${info[keyName]}`, info);
 
       const result = transformUpdateResponse
         ? transformUpdateResponse(response as any)
@@ -309,28 +309,25 @@ function useRestListApi<T, RawResponse = ListResponse<T>>(
   async function remove(
     ids: string | string[],
     isNeedUpdate: boolean = true,
-  ): Promise<T> {
+  ): Promise<void> {
     const { useMultiDeleteApi = true } = options || {};
 
     try {
-      let result: T = null as any;
       if (typeof ids !== 'string') {
         if (useMultiDeleteApi) {
-          result = await http.delete(`${requestUrl}/${ids.join(',')}`);
+          await http.delete(`${baseUrl}/${ids.join(',')}`);
 
           if (isNeedUpdate) {
             removeItemsByIds(ids);
           }
         }
       } else {
-        result = await http.delete(`${requestUrl}/${ids}`);
+        await http.delete(`${baseUrl}/${ids}`);
 
         if (isNeedUpdate) {
           removeItemById(ids as string);
         }
       }
-
-      return result;
     } catch (error) {
       throw error;
     }
