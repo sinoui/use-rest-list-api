@@ -1,6 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { renderHook } from 'react-hooks-testing-library';
-import http, { HttpResponse } from '@sinoui/http';
-import qs from 'qs';
+import http from '@sinoui/http';
 import useRestListApi from '../useRestListApi';
 
 jest.mock('@sinoui/http');
@@ -178,4 +178,71 @@ it('列表排序', async () => {
   ]);
   expect(result.current.searchParams).toBeUndefined();
   expect(http.get).toBeCalledTimes(2);
+});
+
+it('更新部分数据', async () => {
+  (http.get as jest.Mock).mockResolvedValue({
+    content: [{ userId: '1', userName: '张三' }],
+    totalElements: 1,
+  });
+
+  const { result, waitForNextUpdate } = renderHook(() =>
+    useRestListApi<any>('/test', [], {
+      keyName: 'userId',
+    }),
+  );
+
+  await waitForNextUpdate();
+
+  result.current.setItem('1', {
+    userName: '张三2',
+    age: 10,
+  });
+
+  expect(result.current.items[0]).toEqual({
+    userId: '1',
+    userName: '张三2',
+    age: 10,
+  });
+});
+
+it('通过id删除数据项', async () => {
+  (http.get as jest.Mock).mockResolvedValue({
+    content: [{ userId: '1', userName: '张三' }],
+    totalElements: 1,
+  });
+
+  const { result, waitForNextUpdate } = renderHook(() =>
+    useRestListApi<any>('/test', [], {
+      keyName: 'userId',
+    }),
+  );
+
+  await waitForNextUpdate();
+
+  result.current.removeItemById('1');
+
+  expect(result.current.items.length).toBe(0);
+});
+
+it('通过id删除一组数据项', async () => {
+  (http.get as jest.Mock).mockResolvedValue({
+    content: [
+      { userId: '1', userName: '张三' },
+      { userId: '2', userName: '张三2' },
+    ],
+    totalElements: 1,
+  });
+
+  const { result, waitForNextUpdate } = renderHook(() =>
+    useRestListApi<any>('/test', [], {
+      keyName: 'userId',
+    }),
+  );
+
+  await waitForNextUpdate();
+
+  result.current.removeItemsByIds(['1', '2', '0']);
+
+  expect(result.current.items.length).toBe(0);
 });

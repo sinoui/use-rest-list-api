@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useReducer, useCallback, useRef, useEffect } from 'react';
 import http from '@sinoui/http';
 import qs from 'qs';
@@ -107,8 +108,8 @@ function useRestListApi<T, RawResponse = ListResponse<T>>(
    * @returns
    */
   function fetch(
-    sorts: SortInfo[] = state.sorts,
-    searchParams: { [x: string]: string } = state.searchParams,
+    sorts: SortInfo[] | undefined = state.sorts,
+    searchParams: { [x: string]: string } | undefined = state.searchParams,
   ): Promise<ListResponse<T>> {
     return doFetch(sorts, {
       ...searchParams,
@@ -121,9 +122,12 @@ function useRestListApi<T, RawResponse = ListResponse<T>>(
    * @param {SortInfo[]} sorts
    * @returns {Promise<PageResponse<T>>}
    */
-  function sortWith(sorts: SortInfo[]): Promise<ListResponse<T>> {
-    return doFetch(sorts);
-  }
+  const sortWith = useCallback(
+    (sorts: SortInfo[]): Promise<ListResponse<T>> => {
+      return doFetch(sorts);
+    },
+    [doFetch],
+  );
 
   /**
    * 获取指定id的数据
@@ -142,85 +146,90 @@ function useRestListApi<T, RawResponse = ListResponse<T>>(
    * @param {T} item
    * @returns {T}
    */
-  function updateItem(item: T): T {
-    dispatch({ type: 'UPDATE_ITEM', payload: { item, keyName } });
+  const updateItem = useCallback(
+    (item: T): T => {
+      dispatch({ type: 'UPDATE_ITEM', payload: { item, keyName } });
 
-    return item;
-  }
+      return item;
+    },
+    [keyName],
+  );
 
   /**
    * 更新指定数据的部分字段
    *
    * @param {string} itemId 数据key值
    * @param {T} itemInfo 要更新的字段信息
-   * @returns {T}
    */
-  function setItem(itemId: string, itemInfo: T): T {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const item = state.items.find((data: any) => data[keyName] === itemId);
-    const newItem = { ...item, ...itemInfo };
-
-    dispatch({
-      type: 'UPDATE_ITEM',
-      payload: { item: newItem, keyName },
-    });
-
-    return newItem;
-  }
+  const setItem = useCallback(
+    (itemId: string, itemInfo: Partial<T>) => {
+      dispatch({
+        type: 'SET_ITEM',
+        payload: { extraItemInfo: itemInfo, keyName, itemId },
+      });
+    },
+    [keyName],
+  );
 
   /**
    * 替换数据
    *
    * @param {T[]} itemsInfo
    */
-  function setItems(itemsInfo: T[]) {
+  const setItems = useCallback((itemsInfo: T[]) => {
     dispatch({ type: 'SET_ITEMS', payload: itemsInfo });
-  }
+  }, []);
 
   /**
    * 新增一条列表数据
    *
    * @param {T} item
    */
-  function addItem(item: T) {
+  const addItem = useCallback((item: T) => {
     dispatch({
       type: 'ADD_ITEM',
       payload: item,
     });
-  }
+  }, []);
 
   /**
    * 根据id删除一条数据
    *
    * @param {string} itemId
    */
-  function removeItemById(itemId: string) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const idx = state.items.findIndex((item: any) => item[keyName] === itemId);
-    dispatch({ type: 'REMOVE_ITEM', payload: [idx] });
-  }
+  const removeItemById = useCallback(
+    (itemId: string) => {
+      dispatch({
+        type: 'REMOVE_ITEM_BY_ID',
+        payload: { itemIds: [itemId], keyName },
+      });
+    },
+    [keyName],
+  );
 
   /**
    * 删除指定行的数据
    *
    * @param {number} index
    */
-  function removeItemAt(index: number) {
+  const removeItemAt = useCallback((index: number) => {
     dispatch({ type: 'REMOVE_ITEM', payload: [index] });
-  }
+  }, []);
 
   /**
    * 删除多条数据
    *
    * @param {string[]} ids
    */
-  function removeItemsByIds(ids: string[]) {
-    const idxs = ids.map((id) =>
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      state.items.findIndex((item: any) => item[keyName] === id),
-    );
-    dispatch({ type: 'REMOVE_ITEM', payload: idxs });
-  }
+  const removeItemsByIds = useCallback(
+    (ids: string[]) => {
+      dispatch({
+        type: 'REMOVE_ITEM_BY_ID',
+        payload: { itemIds: ids, keyName },
+      });
+    },
+    [keyName],
+  );
 
   /**
    * 获取一条数据详情信息
@@ -229,22 +238,26 @@ function useRestListApi<T, RawResponse = ListResponse<T>>(
    * @param {boolean} [isNeedUpdate=true]
    * @returns {Promise<T>}
    */
-  async function get(id: string, isNeedUpdate: boolean = true): Promise<T> {
-    try {
-      const response: T = await http.get(`${baseUrl}/${id}`);
-      const result = transformFetchOneResponse
-        ? transformFetchOneResponse(response as any)
-        : response;
+  const get = useCallback(
+    async function get(id: string, isNeedUpdate: boolean = true): Promise<T> {
+      try {
+        const response: T = await http.get(`${baseUrl}/${id}`);
+        const result = transformFetchOneResponse
+          ? transformFetchOneResponse(response as any)
+          : response;
 
-      if (isNeedUpdate) {
-        updateItem(result);
+        if (isNeedUpdate) {
+          updateItem(result);
+        }
+
+        return result;
+      } catch (error) {
+        throw error;
       }
+    },
+    [baseUrl, transformFetchOneResponse, updateItem],
+  );
 
-      return result;
-    } catch (error) {
-      throw error;
-    }
-  }
   /**
    * 新增数据
    *
@@ -252,25 +265,29 @@ function useRestListApi<T, RawResponse = ListResponse<T>>(
    * @param {boolean} [isNeedUpdate=true]
    * @returns {Promise<T>}
    */
-  async function save(itemInfo: T, isNeedUpdate: boolean = true): Promise<T> {
-    try {
-      const info = transformSaveRequest
-        ? transformSaveRequest(itemInfo)
-        : itemInfo;
-      const response: T = await http.post(baseUrl, info);
-      const result = transformSaveResponse
-        ? transformSaveResponse(response as any)
-        : response;
+  const save = useCallback(
+    async (itemInfo: T, isNeedUpdate: boolean = true): Promise<T> => {
+      try {
+        const info = transformSaveRequest
+          ? transformSaveRequest(itemInfo)
+          : itemInfo;
+        const response: T = await http.post(baseUrl, info);
+        const result = transformSaveResponse
+          ? transformSaveResponse(response as any)
+          : response;
 
-      if (isNeedUpdate) {
-        addItem(result);
+        if (isNeedUpdate) {
+          addItem(result);
+        }
+
+        return result;
+      } catch (error) {
+        throw error;
       }
+    },
+    [addItem, baseUrl, transformSaveRequest, transformSaveResponse],
+  );
 
-      return result;
-    } catch (error) {
-      throw error;
-    }
-  }
   /**
    * 更新数据信息
    *
@@ -278,27 +295,37 @@ function useRestListApi<T, RawResponse = ListResponse<T>>(
    * @param {boolean} [isNeedUpdate=true]
    * @returns {Promise<T>}
    */
-  async function update(itemInfo: T, isNeedUpdate: boolean = true): Promise<T> {
-    try {
-      const info = transformUpdateRequest
-        ? transformUpdateRequest(itemInfo)
-        : (itemInfo as any);
+  const update = useCallback(
+    async (itemInfo: T, isNeedUpdate: boolean = true): Promise<T> => {
+      try {
+        const info = transformUpdateRequest
+          ? transformUpdateRequest(itemInfo)
+          : (itemInfo as any);
 
-      const response: T = await http.put(`${baseUrl}/${info[keyName]}`, info);
+        const response: T = await http.put(`${baseUrl}/${info[keyName]}`, info);
 
-      const result = transformUpdateResponse
-        ? transformUpdateResponse(response as any)
-        : response;
+        const result = transformUpdateResponse
+          ? transformUpdateResponse(response as any)
+          : response;
 
-      if (isNeedUpdate) {
-        updateItem(result);
+        if (isNeedUpdate) {
+          updateItem(result);
+        }
+
+        return result;
+      } catch (error) {
+        throw error;
       }
+    },
+    [
+      baseUrl,
+      keyName,
+      transformUpdateRequest,
+      transformUpdateResponse,
+      updateItem,
+    ],
+  );
 
-      return result;
-    } catch (error) {
-      throw error;
-    }
-  }
   /**
    * 删除数据
    *
@@ -306,32 +333,35 @@ function useRestListApi<T, RawResponse = ListResponse<T>>(
    * @param {boolean} [isNeedUpdate=true]
    * @returns {Promise<T>}
    */
-  async function remove(
-    ids: string | string[],
-    isNeedUpdate: boolean = true,
-  ): Promise<void> {
-    const { useMultiDeleteApi = true } = options || {};
+  const remove = useCallback(
+    async (
+      ids: string | string[],
+      isNeedUpdate: boolean = true,
+    ): Promise<void> => {
+      const { useMultiDeleteApi = true } = options || {};
 
-    try {
-      if (typeof ids !== 'string') {
-        if (useMultiDeleteApi) {
-          await http.delete(`${baseUrl}/${ids.join(',')}`);
+      try {
+        if (typeof ids !== 'string') {
+          if (useMultiDeleteApi) {
+            await http.delete(`${baseUrl}/${ids.join(',')}`);
+
+            if (isNeedUpdate) {
+              removeItemsByIds(ids);
+            }
+          }
+        } else {
+          await http.delete(`${baseUrl}/${ids}`);
 
           if (isNeedUpdate) {
-            removeItemsByIds(ids);
+            removeItemById(ids as string);
           }
         }
-      } else {
-        await http.delete(`${baseUrl}/${ids}`);
-
-        if (isNeedUpdate) {
-          removeItemById(ids as string);
-        }
+      } catch (error) {
+        throw error;
       }
-    } catch (error) {
-      throw error;
-    }
-  }
+    },
+    [baseUrl, options, removeItemById, removeItemsByIds],
+  );
 
   /**
    * 查询数据
@@ -339,29 +369,32 @@ function useRestListApi<T, RawResponse = ListResponse<T>>(
    * @param {{ [x: string]: string }} searchParams
    * @returns
    */
-  function query(searchParams: { [x: string]: string }) {
-    return doFetch(state.sorts, {
-      ...searchParams,
-    });
-  }
+  const query = useCallback(
+    (searchParams: { [x: string]: string }) => {
+      return doFetch(state.sorts, {
+        ...searchParams,
+      });
+    },
+    [doFetch, state.sorts],
+  );
 
   /**
    * 重新加载数据
    *
    * @returns
    */
-  function reload() {
+  const reload = useCallback(() => {
     return doFetch(state.sorts, state.searchParams);
-  }
+  }, [doFetch, state.searchParams, state.sorts]);
 
   /**
    * 重置查询条件并完成一次查询
    *
    * @returns
    */
-  function reset() {
+  const reset = useCallback(() => {
     return doFetch(state.sorts, defaultSearchParams);
-  }
+  }, [defaultSearchParams, doFetch, state.sorts]);
 
   return {
     ...state,

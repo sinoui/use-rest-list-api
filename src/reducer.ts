@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { produce } from 'immer';
 import { SortInfo } from './types';
 
 export interface Action {
@@ -65,12 +67,40 @@ function removeItem<T>(state: State<T>, action: Action) {
 }
 
 /**
+ * 设置部分字段
+ *
+ * @param draft 状态
+ * @param action 动作
+ */
+const setItem = produce(<T>(draft: State<T>, action: Action) => {
+  const { itemId, extraItemInfo, keyName } = action.payload;
+  const index = draft.items.findIndex((item: any) => item[keyName] === itemId);
+  if (index !== -1) {
+    const newItem = { ...(draft.items as any)[index], ...extraItemInfo };
+    (draft.items as any)[index] = newItem;
+  }
+});
+
+/**
+ * 通过id删除数据项
+ */
+const removeItemById = produce(<T>(draft: State<T>, action: Action) => {
+  const { itemIds, keyName } = action.payload;
+  itemIds.forEach((itemId: string) => {
+    const idx = draft.items.findIndex((item: any) => item[keyName] === itemId);
+    if (idx !== -1) {
+      draft.items.splice(0, 1);
+    }
+  });
+});
+
+/**
  * 获取数据的reducer
  *
  * @param state 状态
  * @param action 动作
  */
-function reducer<T>(state: State<T>, action: Action) {
+function reducer<T = any>(state: State<T>, action: Action): State<T> {
   switch (action.type) {
     case 'FETCH_INIT':
       return {
@@ -107,6 +137,10 @@ function reducer<T>(state: State<T>, action: Action) {
         ...state,
         items: action.payload,
       };
+    case 'SET_ITEM':
+      return setItem(state, action);
+    case 'REMOVE_ITEM_BY_ID':
+      return removeItemById(state, action);
     default:
       return state;
   }
