@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v0.3.1 - 2019.7.9
+
+- fix: 修复 removeByIId 方法错误
+
 ## v0.3.0 - 2019.7.9
 
 - improve: 缓存回调函数
