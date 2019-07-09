@@ -89,7 +89,7 @@ const removeItemById = produce(<T>(draft: State<T>, action: Action) => {
   itemIds.forEach((itemId: string) => {
     const idx = draft.items.findIndex((item: any) => item[keyName] === itemId);
     if (idx !== -1) {
-      draft.items.splice(0, 1);
+      draft.items.splice(idx, 1);
     }
   });
 });

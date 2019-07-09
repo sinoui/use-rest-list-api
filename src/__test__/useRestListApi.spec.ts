@@ -246,3 +246,22 @@ it('通过id删除一组数据项', async () => {
 
   expect(result.current.items.length).toBe(0);
 });
+
+it('通过id删除第二条数据项', async () => {
+  (http.get as jest.Mock).mockResolvedValue({
+    content: [{ userId: '1', userName: '张三' }, { userId: '2', userName: '张三' }],
+    totalElements: 1,
+  });
+
+  const { result, waitForNextUpdate } = renderHook(() =>
+    useRestListApi<any>('/test', [], {
+      keyName: 'userId',
+    }),
+  );
+
+  await waitForNextUpdate();
+
+  result.current.removeItemById('2');
+
+  expect(result.current.items[0]).toEqual({ userId: '1', userName: '张三' });
+});
