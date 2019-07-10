@@ -14,17 +14,6 @@ export interface SortInfo {
   property: string;
 }
 
-export interface ListResponse<T> {
-  /**
-   * 数据列表
-   */
-  content: T[];
-  /**
-   * 总大小
-   */
-  totalElements: number;
-}
-
 /**
  * useRestListApi配置信息
  */
@@ -56,7 +45,7 @@ export interface Options<T> {
   /**
    * 指定列表查询结果的转换器
    */
-  transformListReponse?: (response: HttpResponse) => ListResponse<any>;
+  transformListReponse?: (response: HttpResponse) => any;
   /**
    * 指定查询条件转换器
    */
