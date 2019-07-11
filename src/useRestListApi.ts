@@ -62,9 +62,16 @@ function useRestListApi<T, RawResponse = T[]>(
         const params = transformListRequest
           ? transformListRequest(searchParams, { sorts })
           : getSearchParams(sorts, searchParams);
-        const response = await http.get<T[]>(
-          url.includes('?') ? `${url}&${params}` : `${url}?${params}`,
-        );
+
+        const requestUrl =
+          // eslint-disable-next-line no-nested-ternary
+          params && Object.keys(params).length !== 0
+            ? url.includes('?')
+              ? `${url}&${params}`
+              : `${url}?${params}`
+            : url;
+
+        const response = await http.get<T[]>(requestUrl);
 
         const result = transformListReponse
           ? transformListReponse(response as any)
