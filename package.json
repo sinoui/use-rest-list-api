@@ -1,6 +1,6 @@
 {
   "name": "@sinoui/use-rest-list-api",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "license": "MIT",
   "main": "dist/index.js",
   "umd:main": "dist/use-rest-list-api.umd.production.js",

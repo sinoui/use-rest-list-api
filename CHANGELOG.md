@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v0.4.1 - 2019.7.11
+
+- feat: 导出 Options 类型
+
 ## v0.4.0 - 2019.7.11
 
 - breakchange：将 react 从 dependencies 中移除，移动至 peerDependencies 中
