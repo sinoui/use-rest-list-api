@@ -66,6 +66,20 @@ function removeItem<T>(state: State<T>, action: Action) {
   };
 }
 
+function addItem<T>(state: State<T>, action: Action) {
+  const { item, idx } = action.payload;
+  const preItems = state.items;
+  const newItems =
+    idx === -1
+      ? [...preItems, item]
+      : [...preItems.slice(0, idx), item, ...preItems.slice(idx)];
+
+  return {
+    ...state,
+    items: newItems,
+  };
+}
+
 /**
  * 设置部分字段
  *
@@ -126,10 +140,7 @@ function reducer<T = any>(state: State<T>, action: Action): State<T> {
     case 'UPDATE_ITEM':
       return updateItem(state, action);
     case 'ADD_ITEM':
-      return {
-        ...state,
-        items: [...state.items, action.payload],
-      };
+      return addItem(state, action);
     case 'REMOVE_ITEM':
       return removeItem(state, action);
     case 'SET_ITEMS':

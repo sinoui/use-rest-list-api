@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { renderHook } from 'react-hooks-testing-library';
 import http from '@sinoui/http';
+import { async } from 'q';
 import useRestListApi from '../useRestListApi';
 
 jest.mock('@sinoui/http');
@@ -241,4 +242,64 @@ it('通过id删除第二条数据项', async () => {
   result.current.removeItemById('2');
 
   expect(result.current.items[0]).toEqual({ userId: '1', userName: '张三' });
+});
+
+it('保存数据', async () => {
+  (http.get as jest.Mock).mockResolvedValue([
+    { userId: '1', userName: '张三' },
+    { userId: '2', userName: '李四' },
+  ]);
+  (http.post as jest.Mock)
+    .mockResolvedValueOnce({
+      userId: '5',
+      userName: '田七',
+    })
+    .mockResolvedValueOnce({
+      userId: '6',
+      userName: '周八',
+    });
+
+  const { result, waitForNextUpdate } = renderHook(() =>
+    useRestListApi<any>('/test', [], {
+      keyName: 'userId',
+    }),
+  );
+
+  await waitForNextUpdate();
+
+  result.current.addItem({ userId: '3', userName: '王五' });
+
+  expect(result.current.items).toEqual([
+    { userId: '1', userName: '张三' },
+    { userId: '2', userName: '李四' },
+    { userId: '3', userName: '王五' },
+  ]);
+
+  result.current.addItem({ userId: '4', userName: '赵六' }, 1);
+  expect(result.current.items).toEqual([
+    { userId: '1', userName: '张三' },
+    { userId: '4', userName: '赵六' },
+    { userId: '2', userName: '李四' },
+    { userId: '3', userName: '王五' },
+  ]);
+
+  await result.current.save({ userId: '5', userName: '田七' });
+
+  expect(result.current.items).toEqual([
+    { userId: '1', userName: '张三' },
+    { userId: '4', userName: '赵六' },
+    { userId: '2', userName: '李四' },
+    { userId: '3', userName: '王五' },
+    { userId: '5', userName: '田七' },
+  ]);
+
+  await result.current.save({ userId: '5', userName: '田七' }, undefined, 2);
+  expect(result.current.items).toEqual([
+    { userId: '1', userName: '张三' },
+    { userId: '4', userName: '赵六' },
+    { userId: '6', userName: '周八' },
+    { userId: '2', userName: '李四' },
+    { userId: '3', userName: '王五' },
+    { userId: '5', userName: '田七' },
+  ]);
 });

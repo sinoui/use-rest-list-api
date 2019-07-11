@@ -192,10 +192,10 @@ function useRestListApi<T, RawResponse = T[]>(
    *
    * @param {T} item
    */
-  const addItem = useCallback((item: T) => {
+  const addItem = useCallback((item: T, idx: number = -1) => {
     dispatch({
       type: 'ADD_ITEM',
-      payload: item,
+      payload: { item, idx },
     });
   }, []);
 
@@ -273,7 +273,11 @@ function useRestListApi<T, RawResponse = T[]>(
    * @returns {Promise<T>}
    */
   const save = useCallback(
-    async (itemInfo: T, isNeedUpdate: boolean = true): Promise<T> => {
+    async (
+      itemInfo: T,
+      isNeedUpdate: boolean = true,
+      idx?: number,
+    ): Promise<T> => {
       try {
         const info = transformSaveRequest
           ? transformSaveRequest(itemInfo)
@@ -284,7 +288,7 @@ function useRestListApi<T, RawResponse = T[]>(
           : response;
 
         if (isNeedUpdate) {
-          addItem(result);
+          addItem(result, idx);
         }
 
         return result;
