@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## v0.4.0 - 2019.7.11
+
+- breakchange：将 react 从 dependencies 中移除，移动至 peerDependencies 中
+- breakchange：获取列表的响应数据结构调整 将返回数据结构从`{content: T[],totalElements:string}`调整为`T[]`
+
 ## v0.3.1 - 2019.7.9
 
 - fix: 修复 removeById 方法错误

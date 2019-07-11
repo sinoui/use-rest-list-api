@@ -102,8 +102,7 @@ GET /users?sex=male&sort=firstName&sort=lastName,desc
 后端返回 json 格式数据，数据如下：
 
 ```js
-{
-  "content": [
+ [
     {
       "id": "1",
       "firstName": "张",
@@ -116,16 +115,8 @@ GET /users?sex=male&sort=firstName&sort=lastName,desc
       "lastName": "四",
       "sex": "male"
     }
-    // 此处省去8条数据
-  ],
-  "totalElements": 540, // 符合条件的所有用户数量
-}
+  ]
 ```
-
-解释一下各属性的含义：
-
-- `content` - 当前页查询到的数据
-- `totalElements` - 符合查询条件的所有的数据数量
 
 注意：如果你的 API 响应的数据格式不是这样的，那么你可以[定制列表查询响应转换器](#定制列表查询响应转换器)，将 API 响应数据转换成上面说的数据格式即可。
 
@@ -272,16 +263,7 @@ interface SortInfo {
 useRestListApi 默认列表查询的数据结构如下：
 
 ```ts
-interface PageResponse<T> {
-  /**
-   * 数据列表
-   */
-  content: T[];
-  /**
-   * 总大小
-   */
-  totalElements: number;
-}
+T[]
 ```
 
 ## useRestListApi 参数说明
@@ -422,10 +404,7 @@ interface HackerNewsListResponse {
 function transformListResponse(
   response: HackerNewsListResponse,
 ): PageResponse<HackerNew> {
-  return {
-    content: response.hits,
-    totalElements: response.nbHits,
-  };
+  return response.hits,
 }
 ```
 
