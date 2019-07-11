@@ -21,6 +21,7 @@ it('只有url时获取数据成功', async () => {
     useRestListApi('/test'),
   );
 
+  expect((http.get as jest.Mock).mock.calls[0][0]).toMatch('/test');
   expect(result.current.items).toEqual([]);
   expect(result.current.isError).toBeFalsy();
   expect(result.current.isLoading).toBeTruthy();
