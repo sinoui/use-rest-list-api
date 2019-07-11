@@ -13,15 +13,15 @@ afterEach(() => {
 });
 
 it('只有url时获取数据成功', async () => {
-  (http.get as jest.Mock).mockResolvedValue({
-    content: [{ userId: '1', userName: '张三' }],
-    totalElements: 1,
-  });
+  (http.get as jest.Mock).mockResolvedValue([
+    { userId: '1', userName: '张三' },
+  ]);
 
   const { result, waitForNextUpdate } = renderHook(() =>
     useRestListApi('/test'),
   );
 
+  expect((http.get as jest.Mock).mock.calls[0][0]).toMatch('/test');
   expect(result.current.items).toEqual([]);
   expect(result.current.isError).toBeFalsy();
   expect(result.current.isLoading).toBeTruthy();
@@ -49,13 +49,10 @@ it('只有url参数时获取数据失败', async () => {
 });
 
 it('添加默认的查询参数', async () => {
-  (http.get as jest.Mock).mockResolvedValue({
-    content: [
-      { userId: '1', userName: '张三', age: 27 },
-      { userId: '2', userName: '李四', age: 20 },
-    ],
-    totalElements: 2,
-  });
+  (http.get as jest.Mock).mockResolvedValue([
+    { userId: '1', userName: '张三', age: 27 },
+    { userId: '2', userName: '李四', age: 20 },
+  ]);
 
   const { result, waitForNextUpdate } = renderHook(() =>
     useRestListApi('/test', [], { defaultSearchParams: { name: '张三' } }),
@@ -80,13 +77,10 @@ it('添加默认的查询参数', async () => {
 });
 
 it('添加默认的排序字段', async () => {
-  (http.get as jest.Mock).mockResolvedValue({
-    content: [
-      { userId: '1', userName: '张三', age: 27 },
-      { userId: '2', userName: '李四', age: 20 },
-    ],
-    totalElements: 2,
-  });
+  (http.get as jest.Mock).mockResolvedValue([
+    { userId: '1', userName: '张三', age: 27 },
+    { userId: '2', userName: '李四', age: 20 },
+  ]);
 
   const { result } = renderHook(() =>
     useRestListApi('/test', [], {
@@ -104,21 +98,15 @@ it('添加默认的排序字段', async () => {
 
 it('fetch方法获取数据', async () => {
   (http.get as jest.Mock)
-    .mockResolvedValueOnce({
-      content: [
-        { userId: '1', userName: '张三', age: 27 },
-        { userId: '2', userName: '李四', age: 20 },
-      ],
-      totalElements: 2,
-    })
-    .mockResolvedValueOnce({
-      content: [
-        { userId: '1', userName: '张三', age: 27 },
-        { userId: '2', userName: '李四', age: 20 },
-        { userId: '3', userName: '王五', age: 20 },
-      ],
-      totalElements: 3,
-    });
+    .mockResolvedValueOnce([
+      { userId: '1', userName: '张三', age: 27 },
+      { userId: '2', userName: '李四', age: 20 },
+    ])
+    .mockResolvedValueOnce([
+      { userId: '1', userName: '张三', age: 27 },
+      { userId: '2', userName: '李四', age: 20 },
+      { userId: '3', userName: '王五', age: 20 },
+    ]);
   const { result, waitForNextUpdate } = renderHook(() =>
     useRestListApi('/test'),
   );
@@ -144,20 +132,14 @@ it('fetch方法获取数据', async () => {
 
 it('列表排序', async () => {
   (http.get as jest.Mock)
-    .mockReturnValueOnce({
-      content: [
-        { userId: '2', userName: '李四', age: 20 },
-        { userId: '1', userName: '张三', age: 27 },
-      ],
-      totalElements: 2,
-    })
-    .mockResolvedValueOnce({
-      content: [
-        { userId: '1', userName: '张三', age: 27 },
-        { userId: '2', userName: '李四', age: 20 },
-      ],
-      totalElements: 2,
-    });
+    .mockReturnValueOnce([
+      { userId: '2', userName: '李四', age: 20 },
+      { userId: '1', userName: '张三', age: 27 },
+    ])
+    .mockResolvedValueOnce([
+      { userId: '1', userName: '张三', age: 27 },
+      { userId: '2', userName: '李四', age: 20 },
+    ]);
 
   const { result, waitForNextUpdate } = renderHook(() =>
     useRestListApi('/test'),
@@ -181,10 +163,9 @@ it('列表排序', async () => {
 });
 
 it('更新部分数据', async () => {
-  (http.get as jest.Mock).mockResolvedValue({
-    content: [{ userId: '1', userName: '张三' }],
-    totalElements: 1,
-  });
+  (http.get as jest.Mock).mockResolvedValue([
+    { userId: '1', userName: '张三' },
+  ]);
 
   const { result, waitForNextUpdate } = renderHook(() =>
     useRestListApi<any>('/test', [], {
@@ -207,10 +188,9 @@ it('更新部分数据', async () => {
 });
 
 it('通过id删除数据项', async () => {
-  (http.get as jest.Mock).mockResolvedValue({
-    content: [{ userId: '1', userName: '张三' }],
-    totalElements: 1,
-  });
+  (http.get as jest.Mock).mockResolvedValue([
+    { userId: '1', userName: '张三' },
+  ]);
 
   const { result, waitForNextUpdate } = renderHook(() =>
     useRestListApi<any>('/test', [], {
@@ -226,13 +206,10 @@ it('通过id删除数据项', async () => {
 });
 
 it('通过id删除一组数据项', async () => {
-  (http.get as jest.Mock).mockResolvedValue({
-    content: [
-      { userId: '1', userName: '张三' },
-      { userId: '2', userName: '张三2' },
-    ],
-    totalElements: 1,
-  });
+  (http.get as jest.Mock).mockResolvedValue([
+    { userId: '1', userName: '张三' },
+    { userId: '2', userName: '张三2' },
+  ]);
 
   const { result, waitForNextUpdate } = renderHook(() =>
     useRestListApi<any>('/test', [], {
@@ -248,10 +225,10 @@ it('通过id删除一组数据项', async () => {
 });
 
 it('通过id删除第二条数据项', async () => {
-  (http.get as jest.Mock).mockResolvedValue({
-    content: [{ userId: '1', userName: '张三' }, { userId: '2', userName: '张三' }],
-    totalElements: 1,
-  });
+  (http.get as jest.Mock).mockResolvedValue([
+    { userId: '1', userName: '张三' },
+    { userId: '2', userName: '张三' },
+  ]);
 
   const { result, waitForNextUpdate } = renderHook(() =>
     useRestListApi<any>('/test', [], {

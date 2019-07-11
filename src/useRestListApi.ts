@@ -2,7 +2,7 @@
 import { useReducer, useCallback, useRef, useEffect } from 'react';
 import http from '@sinoui/http';
 import qs from 'qs';
-import { Options, SortInfo, ListResponse } from './types';
+import { Options, SortInfo } from './types';
 import reducer from './reducer';
 import getSearchParams from './getSearchParams';
 import useEffect2 from './useEffect2';
@@ -19,7 +19,7 @@ function getSearchParamsFromLocation() {
   return null;
 }
 
-function useRestListApi<T, RawResponse = ListResponse<T>>(
+function useRestListApi<T, RawResponse = T[]>(
   url: string,
   defaultValue: T[] = [],
   options?: Options<T>,
@@ -55,16 +55,23 @@ function useRestListApi<T, RawResponse = ListResponse<T>>(
     async (
       sorts?: SortInfo[],
       searchParams?: { [x: string]: string },
-    ): Promise<ListResponse<T>> => {
+    ): Promise<T[]> => {
       dispatch({ type: 'FETCH_INIT', payload: searchParams });
 
       try {
         const params = transformListRequest
           ? transformListRequest(searchParams, { sorts })
           : getSearchParams(sorts, searchParams);
-        const response = await http.get<ListResponse<T>>(
-          url.includes('?') ? `${url}&${params}` : `${url}?${params}`,
-        );
+
+        const requestUrl =
+          // eslint-disable-next-line no-nested-ternary
+          params && Object.keys(params).length !== 0
+            ? url.includes('?')
+              ? `${url}&${params}`
+              : `${url}?${params}`
+            : url;
+
+        const response = await http.get<T[]>(requestUrl);
 
         const result = transformListReponse
           ? transformListReponse(response as any)
@@ -72,7 +79,7 @@ function useRestListApi<T, RawResponse = ListResponse<T>>(
 
         dispatch({
           type: 'FETCH_SUCCESS',
-          payload: { ...result, sorts },
+          payload: { content: result, sorts },
         });
         rawResponseRef.current = result as any;
         return result;
@@ -110,7 +117,7 @@ function useRestListApi<T, RawResponse = ListResponse<T>>(
   function fetch(
     sorts: SortInfo[] | undefined = state.sorts,
     searchParams: { [x: string]: string } | undefined = state.searchParams,
-  ): Promise<ListResponse<T>> {
+  ): Promise<T[]> {
     return doFetch(sorts, {
       ...searchParams,
     });
@@ -123,7 +130,7 @@ function useRestListApi<T, RawResponse = ListResponse<T>>(
    * @returns {Promise<PageResponse<T>>}
    */
   const sortWith = useCallback(
-    (sorts: SortInfo[]): Promise<ListResponse<T>> => {
+    (sorts: SortInfo[]): Promise<T[]> => {
       return doFetch(sorts);
     },
     [doFetch],
