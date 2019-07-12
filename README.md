@@ -102,20 +102,20 @@ GET /users?sex=male&sort=firstName&sort=lastName,desc
 后端返回 json 格式数据，数据如下：
 
 ```js
- [
-    {
-      "id": "1",
-      "firstName": "张",
-      "lastName": "三",
-      "sex": "male"
-    },
-    {
-      "id": "2",
-      "firstName": "李",
-      "lastName": "四",
-      "sex": "male"
-    }
-  ]
+[
+  {
+    id: '1',
+    firstName: '张',
+    lastName: '三',
+    sex: 'male',
+  },
+  {
+    id: '2',
+    firstName: '李',
+    lastName: '四',
+    sex: 'male',
+  },
+];
 ```
 
 注意：如果你的 API 响应的数据格式不是这样的，那么你可以[定制列表查询响应转换器](#定制列表查询响应转换器)，将 API 响应数据转换成上面说的数据格式即可。
@@ -156,18 +156,23 @@ GET /users/1
 POST /users
 ```
 
-请求体是 JSON 格式的数据：
+请求参数: (itemInfo: T,isNeedUpdate: boolean = true, idx: number = -1)
 
-```json
+```js
+// 要新增的数据
 {
   "firstName": "王",
   "lastName": "五",
   "sex": "female",
   "birthday": "2000-08-12"
-}
+}，
+// 新增操作完成之后是否需要刷新页面，默认true
+false,
+// 指定新增数据的插入位置，默认-1，在数据的末尾添加
+-1
 ```
 
-注意：如果你的 API 请求数据格式不一致，你可以通过[定制新增请求的数据转换器](#定制新增请求的数据转换器)，将上面的数据格式转换成满足你的 API 的数据格式。
+注意：如果你的 API 请求要新增的数据格式不一致，你可以通过[定制新增请求的数据转换器](#定制新增请求的数据转换器)，将上面的数据格式转换成满足你的 API 的数据格式。
 
 #### 响应
 
@@ -285,7 +290,7 @@ const dataSource = useRestListApi<T, PageData>(
 指定默认的列表分页数据，默认为：
 
 ```js
-[]
+T[]
 ```
 
 ### options
@@ -323,7 +328,7 @@ export default function transformListRequest(
   searchParams: {
     [key: string]: string;
   },
-  sorts:SortInfo[]
+  sorts: SortInfo[],
 ) {
   return qs.stringify(
     {
@@ -536,7 +541,7 @@ dataSource.setItem('1', { birthday: '2000-10-12' });
 dataSource.setItems([{id:'1',birthday:'2019-01-01'},{id:'2',age:32}])
 
 // 新增
-dataSource.addItem({id: '5', firstName: '赵'， lastName: '六'});
+dataSource.addItem({id: '5', firstName: '赵'， lastName: '六'}, false, -1);
 
 // 删除id为'1'的用户数据
 dataSource.removeItemById('3');
@@ -606,7 +611,11 @@ function fetch<T>(
 const user = await dataSource.get('1');
 
 // 新增用户数据
-const user = await dataSource.save({ firstName: '张', lastName: '三' });
+const user = await dataSource.save(
+  { firstName: '张', lastName: '三' },
+  false,
+  -1,
+);
 
 // 修改用户数据
 const user = await dataSource.update({
