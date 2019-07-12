@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { renderHook } from 'react-hooks-testing-library';
 import http from '@sinoui/http';
-import { async } from 'q';
 import useRestListApi from '../useRestListApi';
 
 jest.mock('@sinoui/http');
