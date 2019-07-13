@@ -337,6 +337,7 @@ function useRestListApi<T, RawResponse = T[]>(
     ],
   );
 
+  const { useMultiDeleteApi = true } = options || {};
   /**
    * 删除数据
    *
@@ -349,7 +350,6 @@ function useRestListApi<T, RawResponse = T[]>(
       ids: string | string[],
       isNeedUpdate: boolean = true,
     ): Promise<void> => {
-      const { useMultiDeleteApi = true } = options || {};
 
       try {
         if (typeof ids !== 'string') {
@@ -371,7 +371,7 @@ function useRestListApi<T, RawResponse = T[]>(
         throw error;
       }
     },
-    [baseUrl, options, removeItemById, removeItemsByIds],
+    [baseUrl, useMultiDeleteApi, removeItemById, removeItemsByIds],
   );
 
   /**
