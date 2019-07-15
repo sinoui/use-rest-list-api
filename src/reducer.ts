@@ -15,6 +15,11 @@ export interface State<T> {
   searchParams?: { [x: string]: string };
   sorts?: SortInfo[];
 }
+
+export interface Reducer<T> {
+  (state: State<T>, action: Action): State<T>;
+}
+
 /**
  * 更新数据时更新state
  *

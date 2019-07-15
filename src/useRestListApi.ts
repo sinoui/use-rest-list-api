@@ -3,7 +3,7 @@ import { useReducer, useCallback, useRef, useEffect } from 'react';
 import http from '@sinoui/http';
 import qs from 'qs';
 import { Options, SortInfo } from './types';
-import reducer from './reducer';
+import reducer, { Reducer } from './reducer';
 import getSearchParams from './getSearchParams';
 import useEffect2 from './useEffect2';
 
@@ -41,7 +41,7 @@ function useRestListApi<T, RawResponse = T[]>(
   } = (options || {}) as Options<T>;
   const defaultSorts = (options && options.defaultSort) || [];
 
-  const [state, dispatch] = useReducer(reducer, {
+  const [state, dispatch] = useReducer<Reducer<T>>(reducer, {
     isError: false,
     isLoading: false,
     items: defaultValue,
@@ -142,7 +142,7 @@ function useRestListApi<T, RawResponse = T[]>(
    * @param {string} itemId
    * @returns {T}
    */
-  function getItemById(itemId: string): T {
+  function getItemById(itemId: string): T | undefined {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return state.items.find((item: any) => item[keyName] === itemId);
   }
@@ -350,7 +350,6 @@ function useRestListApi<T, RawResponse = T[]>(
       ids: string | string[],
       isNeedUpdate: boolean = true,
     ): Promise<void> => {
-
       try {
         if (typeof ids !== 'string') {
           if (useMultiDeleteApi) {
