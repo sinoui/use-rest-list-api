@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v0.6.0
+
+- feat: 添加删除数据响应转换器`transformRemoveResponse`
+
 ## v0.5.1 - 2019.7.15
 
 - fix: 修复`remove`方法缓存失效的缺陷

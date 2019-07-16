@@ -34,6 +34,7 @@
   - [定制新增响应的数据转换器](#定制新增响应的数据转换器)
   - [定制更新请求的数据转换器](#定制更新请求的数据转换器)
   - [定制更新响应的数据转换器](#定制更新响应的数据转换器)
+  - [定制删除响应的数据转换器](#定制删除响应的数据转换器)
 - [dataSource 的属性和方法](#datasource-的属性和方法)
   - [获取查询数据](#获取查询数据)
   - [分页和排序](#分页和排序)
@@ -310,6 +311,7 @@ T[]
 - `transformSaveResponse` - 指定新增数据的响应数据转换器。
 - `transformUpdateRequest` - 指定更新数据的请求数据转换器。
 - `transformUpdateResponse` - 指定更新数据的响应数据转换器。
+- `transformRemoveResponse`  - 指定删除数据的响应数据转换器。
 
 转换器可以用来定制你的 API 细节。会用一个章节来介绍。
 
@@ -511,6 +513,25 @@ function transformSaveResponse(responseData: ResponseData): User {
 ### 定制更新响应的数据转换器
 
 使用`transformUpdateResponse`定制更新请求。用法与[transformSaveResponse](#定制新增响应的数据转换器)一致。
+
+### 定制删除响应的数据转换器
+
+```json
+/** 删除API的响应数据结构 */
+interface ResponseData {
+    code:string;
+    msg:string;
+}
+
+function transformRemoveResponse(response:ResponseData):void {
+    if(code==='200'){
+        alert('删除成功');
+    } else {
+        alert('删除失败')；
+        throw new Error(response.msg);
+    }
+}
+```
 
 ## dataSource 的属性和方法
 

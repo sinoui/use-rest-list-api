@@ -38,6 +38,7 @@ function useRestListApi<T, RawResponse = T[]>(
     transformSaveResponse,
     transformUpdateRequest,
     transformUpdateResponse,
+    transformRemoveResponse,
   } = (options || {}) as Options<T>;
   const defaultSorts = (options && options.defaultSort) || [];
 
@@ -353,14 +354,24 @@ function useRestListApi<T, RawResponse = T[]>(
       try {
         if (typeof ids !== 'string') {
           if (useMultiDeleteApi) {
-            await http.delete(`${baseUrl}/${ids.join(',')}`);
+            const response: T = await http.delete(
+              `${baseUrl}/${ids.join(',')}`,
+            );
+
+            if (transformRemoveResponse) {
+              transformRemoveResponse(response);
+            }
 
             if (isNeedUpdate) {
               removeItemsByIds(ids);
             }
           }
         } else {
-          await http.delete(`${baseUrl}/${ids}`);
+          const response: T = await http.delete(`${baseUrl}/${ids}`);
+
+          if (transformRemoveResponse) {
+            transformRemoveResponse(response);
+          }
 
           if (isNeedUpdate) {
             removeItemById(ids as string);
@@ -370,7 +381,13 @@ function useRestListApi<T, RawResponse = T[]>(
         throw error;
       }
     },
-    [baseUrl, useMultiDeleteApi, removeItemById, removeItemsByIds],
+    [
+      useMultiDeleteApi,
+      baseUrl,
+      transformRemoveResponse,
+      removeItemsByIds,
+      removeItemById,
+    ],
   );
 
   /**

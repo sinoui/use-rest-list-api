@@ -73,4 +73,8 @@ export interface Options<T> {
    * 指定更新数据的响应数据转换器
    */
   transformUpdateResponse?: (response: HttpResponse) => T;
+   /**
+   * 指定删除数据的响应数据转换器
+   */
+  transformRemoveResponse?: (response: HttpRequestConfig) => void;
 }
