@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v0.7.0
+
+- fix:修复 useRestListApi 的 crud 响应转换器类型声明错误
+
 ## v0.6.0
 
 - feat: 添加删除数据响应转换器`transformRemoveResponse`

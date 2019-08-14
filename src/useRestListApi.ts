@@ -75,7 +75,7 @@ function useRestListApi<T, RawResponse = T[]>(
         const response = await http.get<T[]>(requestUrl);
 
         const result = transformListReponse
-          ? transformListReponse(response as any)
+          ? transformListReponse(response)
           : response;
 
         dispatch({
@@ -251,7 +251,7 @@ function useRestListApi<T, RawResponse = T[]>(
       try {
         const response: T = await http.get(`${baseUrl}/${id}`);
         const result = transformFetchOneResponse
-          ? transformFetchOneResponse(response as any)
+          ? transformFetchOneResponse(response)
           : response;
 
         if (isNeedUpdate) {
@@ -285,7 +285,7 @@ function useRestListApi<T, RawResponse = T[]>(
           : itemInfo;
         const response: T = await http.post(baseUrl, info);
         const result = transformSaveResponse
-          ? transformSaveResponse(response as any)
+          ? transformSaveResponse(response)
           : response;
 
         if (isNeedUpdate) {
@@ -317,7 +317,7 @@ function useRestListApi<T, RawResponse = T[]>(
         const response: T = await http.put(`${baseUrl}/${info[keyName]}`, info);
 
         const result = transformUpdateResponse
-          ? transformUpdateResponse(response as any)
+          ? transformUpdateResponse(response)
           : response;
 
         if (isNeedUpdate) {
