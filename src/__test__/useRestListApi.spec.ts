@@ -302,3 +302,49 @@ it('保存数据', async () => {
     { userId: '5', userName: '田七' },
   ]);
 });
+
+it('rawResponse取的是原始响应数据', async () => {
+  const rawResponse = {
+    data: [
+      { userId: '1', userName: '张三' },
+      { userId: '2', userName: '李四' },
+    ],
+  };
+  (http.get as jest.Mock).mockResolvedValue(rawResponse);
+
+  const { result, waitForNextUpdate } = renderHook(() =>
+    useRestListApi<any>('/test', [], {
+      keyName: 'userId',
+      transformListReponse: (response) => response.data,
+    }),
+  );
+
+  await waitForNextUpdate();
+  expect(http.get).toHaveBeenCalledTimes(1);
+
+  expect(result.current.rawResponse).toEqual(rawResponse);
+});
+
+it('设置默认查询条件', async () => {
+  (http.get as jest.Mock).mockResolvedValue([
+    { userId: '1', userName: '张三' },
+    { userId: '2', userName: '李四' },
+  ]);
+  const { result, waitForNextUpdate } = renderHook(() =>
+    useRestListApi<any>('/test', [], {
+      keyName: 'userId',
+      defaultSearchParams: { userName: '张三' },
+    }),
+  );
+
+  await waitForNextUpdate();
+
+  expect(result.current.defaultSearchParams).toEqual({ userName: '张三' });
+  expect(result.current.searchParams).toEqual({ userName: '张三' });
+
+  result.current.setDefaultSearchParams({ userName: '李四' });
+
+  expect(http.get).toHaveBeenCalledTimes(2);
+  expect(result.current.defaultSearchParams).toEqual({ userName: '李四' });
+  expect(result.current.searchParams).toEqual({ userName: '李四' });
+});

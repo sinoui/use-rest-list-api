@@ -41,6 +41,7 @@ function useRestListApi<T, RawResponse = T[]>(
     transformRemoveResponse,
   } = (options || {}) as Options<T>;
   const defaultSorts = (options && options.defaultSort) || [];
+  const defaultSearchParamsRef = useRef(defaultSearchParams);
 
   const [state, dispatch] = useReducer<Reducer<T>>(reducer, {
     isError: false,
@@ -48,8 +49,8 @@ function useRestListApi<T, RawResponse = T[]>(
     items: defaultValue,
     sorts: defaultSorts,
     searchParams: syncToUrl
-      ? getSearchParamsFromLocation() || defaultSearchParams
-      : defaultSearchParams,
+      ? getSearchParamsFromLocation() || defaultSearchParamsRef.current
+      : defaultSearchParamsRef.current,
   });
 
   const doFetch = useCallback(
@@ -75,14 +76,15 @@ function useRestListApi<T, RawResponse = T[]>(
         const response = await http.get<T[]>(requestUrl);
 
         const result = transformListReponse
-          ? transformListReponse(response as any)
+          ? transformListReponse(response)
           : response;
 
+        rawResponseRef.current = response as any;
         dispatch({
           type: 'FETCH_SUCCESS',
           payload: { content: result, sorts },
         });
-        rawResponseRef.current = result as any;
+
         return result;
       } catch (e) {
         dispatch({ type: 'FETCH_FAILURE' });
@@ -94,8 +96,8 @@ function useRestListApi<T, RawResponse = T[]>(
 
   useEffect2(() => {
     const searchParams = syncToUrl
-      ? getSearchParamsFromLocation() || defaultSearchParams
-      : defaultSearchParams;
+      ? getSearchParamsFromLocation() || defaultSearchParamsRef.current
+      : defaultSearchParamsRef.current;
     doFetch(defaultSorts, searchParams);
   }, [url]);
 
@@ -251,7 +253,7 @@ function useRestListApi<T, RawResponse = T[]>(
       try {
         const response: T = await http.get(`${baseUrl}/${id}`);
         const result = transformFetchOneResponse
-          ? transformFetchOneResponse(response as any)
+          ? transformFetchOneResponse(response)
           : response;
 
         if (isNeedUpdate) {
@@ -285,7 +287,7 @@ function useRestListApi<T, RawResponse = T[]>(
           : itemInfo;
         const response: T = await http.post(baseUrl, info);
         const result = transformSaveResponse
-          ? transformSaveResponse(response as any)
+          ? transformSaveResponse(response)
           : response;
 
         if (isNeedUpdate) {
@@ -317,7 +319,7 @@ function useRestListApi<T, RawResponse = T[]>(
         const response: T = await http.put(`${baseUrl}/${info[keyName]}`, info);
 
         const result = transformUpdateResponse
-          ? transformUpdateResponse(response as any)
+          ? transformUpdateResponse(response)
           : response;
 
         if (isNeedUpdate) {
@@ -420,8 +422,21 @@ function useRestListApi<T, RawResponse = T[]>(
    * @returns
    */
   const reset = useCallback(() => {
-    return doFetch(state.sorts, defaultSearchParams);
-  }, [defaultSearchParams, doFetch, state.sorts]);
+    return doFetch(state.sorts, defaultSearchParamsRef.current);
+  }, [doFetch, state.sorts]);
+
+  /**
+   * 设置默认查询条件并完成一次查询
+   *
+   * @returns
+   */
+  const setDefaultSearchParams = useCallback(
+    (searchParams: { [x: string]: string }) => {
+      defaultSearchParamsRef.current = searchParams;
+      return query(searchParams);
+    },
+    [query],
+  );
 
   return {
     ...state,
@@ -440,10 +455,11 @@ function useRestListApi<T, RawResponse = T[]>(
     save,
     update,
     remove,
-    defaultSearchParams,
+    defaultSearchParams: defaultSearchParamsRef.current,
     query,
     reload,
     reset,
+    setDefaultSearchParams,
   };
 }
 
