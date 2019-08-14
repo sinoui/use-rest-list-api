@@ -82,7 +82,7 @@ function useRestListApi<T, RawResponse = T[]>(
           type: 'FETCH_SUCCESS',
           payload: { content: result, sorts },
         });
-        rawResponseRef.current = result as any;
+        rawResponseRef.current = response as any;
         return result;
       } catch (e) {
         dispatch({ type: 'FETCH_FAILURE' });

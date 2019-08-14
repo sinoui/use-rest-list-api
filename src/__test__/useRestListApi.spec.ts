@@ -302,3 +302,24 @@ it('保存数据', async () => {
     { userId: '5', userName: '田七' },
   ]);
 });
+
+it('rawResponse取的是原始响应数据', async () => {
+  const rawResponse = {
+    data: [
+      { userId: '1', userName: '张三' },
+      { userId: '2', userName: '李四' },
+    ],
+  };
+  (http.get as jest.Mock).mockResolvedValue(rawResponse);
+
+  const { result, waitForNextUpdate } = renderHook(() =>
+    useRestListApi<any>('/test', [], {
+      keyName: 'userId',
+      transformListReponse: (response) => response.data,
+    }),
+  );
+  result.current.fetch();
+  await waitForNextUpdate();
+
+  expect(result.current.rawResponse).toEqual(rawResponse);
+});
