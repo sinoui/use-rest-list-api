@@ -519,7 +519,7 @@ function transformSaveResponse(responseData: ResponseData): User {
 
 ### 定制删除响应的数据转换器
 
-```json
+```ts
 /** 删除API的响应数据结构 */
 interface ResponseData {
     code:string;
