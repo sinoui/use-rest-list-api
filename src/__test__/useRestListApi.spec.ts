@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { renderHook } from 'react-hooks-testing-library';
+import { renderHook } from '@testing-library/react-hooks';
 import http from '@sinoui/http';
 import useRestListApi from '../useRestListApi';
 
@@ -35,7 +35,7 @@ it('只有url时获取数据成功', async () => {
 });
 
 it('只有url参数时获取数据失败', async () => {
-  (http.get as jest.Mock).mockRejectedValue(new Error('Async error'));
+  (http.get as jest.Mock).mockRejectedValue('Async error');
 
   const { result, waitForNextUpdate } = renderHook(() =>
     useRestListApi('/test'),

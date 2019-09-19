@@ -98,7 +98,9 @@ function useRestListApi<T, RawResponse = T[]>(
     const searchParams = syncToUrl
       ? getSearchParamsFromLocation() || defaultSearchParamsRef.current
       : defaultSearchParamsRef.current;
-    doFetch(defaultSorts, searchParams);
+    doFetch(defaultSorts, searchParams).catch((error) => {
+      console.warn('数据请求失败', error);
+    });
   }, [url]);
 
   useEffect(() => {
@@ -195,7 +197,7 @@ function useRestListApi<T, RawResponse = T[]>(
    *
    * @param {T} item
    */
-  const addItem = useCallback((item: T, idx: number = -1) => {
+  const addItem = useCallback((item: T, idx = -1) => {
     dispatch({
       type: 'ADD_ITEM',
       payload: { item, idx },
@@ -249,21 +251,17 @@ function useRestListApi<T, RawResponse = T[]>(
    * @returns {Promise<T>}
    */
   const get = useCallback(
-    async function get(id: string, isNeedUpdate: boolean = true): Promise<T> {
-      try {
-        const response: T = await http.get(`${baseUrl}/${id}`);
-        const result = transformFetchOneResponse
-          ? transformFetchOneResponse(response)
-          : response;
+    async function get(id: string, isNeedUpdate = true): Promise<T> {
+      const response: T = await http.get(`${baseUrl}/${id}`);
+      const result = transformFetchOneResponse
+        ? transformFetchOneResponse(response)
+        : response;
 
-        if (isNeedUpdate) {
-          updateItem(result);
-        }
-
-        return result;
-      } catch (error) {
-        throw error;
+      if (isNeedUpdate) {
+        updateItem(result);
       }
+
+      return result;
     },
     [baseUrl, transformFetchOneResponse, updateItem],
   );
@@ -276,28 +274,20 @@ function useRestListApi<T, RawResponse = T[]>(
    * @returns {Promise<T>}
    */
   const save = useCallback(
-    async (
-      itemInfo: T,
-      isNeedUpdate: boolean = true,
-      idx?: number,
-    ): Promise<T> => {
-      try {
-        const info = transformSaveRequest
-          ? transformSaveRequest(itemInfo)
-          : itemInfo;
-        const response: T = await http.post(baseUrl, info);
-        const result = transformSaveResponse
-          ? transformSaveResponse(response)
-          : response;
+    async (itemInfo: T, isNeedUpdate = true, idx?: number): Promise<T> => {
+      const info = transformSaveRequest
+        ? transformSaveRequest(itemInfo)
+        : itemInfo;
+      const response: T = await http.post(baseUrl, info);
+      const result = transformSaveResponse
+        ? transformSaveResponse(response)
+        : response;
 
-        if (isNeedUpdate) {
-          addItem(result, idx);
-        }
-
-        return result;
-      } catch (error) {
-        throw error;
+      if (isNeedUpdate) {
+        addItem(result, idx);
       }
+
+      return result;
     },
     [addItem, baseUrl, transformSaveRequest, transformSaveResponse],
   );
@@ -310,26 +300,22 @@ function useRestListApi<T, RawResponse = T[]>(
    * @returns {Promise<T>}
    */
   const update = useCallback(
-    async (itemInfo: T, isNeedUpdate: boolean = true): Promise<T> => {
-      try {
-        const info = transformUpdateRequest
-          ? transformUpdateRequest(itemInfo)
-          : (itemInfo as any);
+    async (itemInfo: T, isNeedUpdate = true): Promise<T> => {
+      const info = transformUpdateRequest
+        ? transformUpdateRequest(itemInfo)
+        : (itemInfo as any);
 
-        const response: T = await http.put(`${baseUrl}/${info[keyName]}`, info);
+      const response: T = await http.put(`${baseUrl}/${info[keyName]}`, info);
 
-        const result = transformUpdateResponse
-          ? transformUpdateResponse(response)
-          : response;
+      const result = transformUpdateResponse
+        ? transformUpdateResponse(response)
+        : response;
 
-        if (isNeedUpdate) {
-          updateItem(result);
-        }
-
-        return result;
-      } catch (error) {
-        throw error;
+      if (isNeedUpdate) {
+        updateItem(result);
       }
+
+      return result;
     },
     [
       baseUrl,
@@ -349,38 +335,29 @@ function useRestListApi<T, RawResponse = T[]>(
    * @returns {Promise<T>}
    */
   const remove = useCallback(
-    async (
-      ids: string | string[],
-      isNeedUpdate: boolean = true,
-    ): Promise<void> => {
-      try {
-        if (typeof ids !== 'string') {
-          if (useMultiDeleteApi) {
-            const response: T = await http.delete(
-              `${baseUrl}/${ids.join(',')}`,
-            );
-
-            if (transformRemoveResponse) {
-              transformRemoveResponse(response);
-            }
-
-            if (isNeedUpdate) {
-              removeItemsByIds(ids);
-            }
-          }
-        } else {
-          const response: T = await http.delete(`${baseUrl}/${ids}`);
+    async (ids: string | string[], isNeedUpdate = true): Promise<void> => {
+      if (typeof ids !== 'string') {
+        if (useMultiDeleteApi) {
+          const response: T = await http.delete(`${baseUrl}/${ids.join(',')}`);
 
           if (transformRemoveResponse) {
             transformRemoveResponse(response);
           }
 
           if (isNeedUpdate) {
-            removeItemById(ids as string);
+            removeItemsByIds(ids);
           }
         }
-      } catch (error) {
-        throw error;
+      } else {
+        const response: T = await http.delete(`${baseUrl}/${ids}`);
+
+        if (transformRemoveResponse) {
+          transformRemoveResponse(response);
+        }
+
+        if (isNeedUpdate) {
+          removeItemById(ids as string);
+        }
       }
     },
     [
