@@ -1,5 +1,8 @@
 # use-rest-list-api
 
+[![npm version](https://img.shields.io/npm/v/@sinoui/use-rest-list-api)](https://www.npmjs.com/package/@sinoui/use-rest-list-api)
+[![downloads](https://img.shields.io/npm/dm/@sinoui/use-rest-list-api)](https://www.npmjs.com/package/@sinoui/use-rest-list-api)
+
 不分页列表与 RESTful CRUD API 交互的状态管理
 
 它可以帮助我们：

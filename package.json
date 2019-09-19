@@ -3,9 +3,16 @@
   "version": "0.7.0",
   "license": "MIT",
   "main": "dist/index.js",
-  "umd:main": "dist/use-rest-list-api.umd.production.js",
   "module": "dist/use-rest-list-api.es.production.js",
   "typings": "dist/index.d.ts",
+  "homepage": "https://sinoui.github.io/use-rest-list-api/",
+  "bugs": {
+    "url": "https://github.com/sinoui/use-rest-list-api/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sinoui/use-rest-list-api.git"
+  },
   "scripts": {
     "start": "ts-lib-tools watch",
     "test": "ts-lib-tools test",

@@ -1,6 +1,10 @@
 # CHANGELOG
 
-## v0.7.0 -- 2019.8.14
+## v1.0.0 - 2019.9.19
+
+- feat: 升级 @sinoui/http@1.0.0
+
+## v0.7.0 - 2019.8.14
 
 - fix:修复 useRestListApi 的 crud 响应转换器类型声明错误
 - breakchange: rawResponse 在有转换器的情况下返回值是直接获取来的数据而不是转换后的数据
