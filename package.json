@@ -1,9 +1,9 @@
 {
   "name": "@sinoui/use-rest-list-api",
-  "version": "0.7.0",
+  "version": "1.0.0",
   "license": "MIT",
   "main": "dist/index.js",
-  "module": "dist/use-rest-list-api.es.production.js",
+  "module": "dist/sinoui-use-rest-list-api.esm.js",
   "typings": "dist/index.d.ts",
   "homepage": "https://sinoui.github.io/use-rest-list-api/",
   "bugs": {
@@ -60,13 +60,13 @@
     "qs": "^6.8.0"
   },
   "devDependencies": {
+    "@testing-library/react-hooks": "^2.0.1",
     "@types/qs": "^6.5.3",
     "@types/react": "^16.9.2",
     "husky": "^3.0.5",
     "lint-staged": "^9.2.5",
     "prettier": "^1.18.2",
     "react": "^16.9.0",
-    "@testing-library/react-hooks": "^2.0.1",
     "react-test-renderer": "^16.9.0",
     "ts-lib-tools": "^0.4.7",
     "typescript": "^3.6.3"
